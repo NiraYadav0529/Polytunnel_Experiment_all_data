@@ -1,0 +1,82 @@
+#Soilnutrients data anlysis harvest day (NH4,NO3, PO4)
+## load libraries
+library(tidyverse)
+library(car)
+library(emmeans)
+library(ggplot2)
+setwd("//ad.uws.edu.au/dfshare/HomesBLK$/90958427/My Documents/Niraj Pot Experiment/Modified Data File")
+
+xrf<- read.csv("Pot_ExP_Data_For_ph_ec_soil.csv")
+head(xrf)
+###Site Descriptions####
+Site_Info<-read.csv('Pot_ExP_Data_For_ph_ec_soil.csv')
+Site_Info
+colnames(Site_Info)[1]<-'Site'
+Site_Info$Site= sub(c('ABS00'),'',Site_Info$Site)
+Site_Info$Site= sub(c('ABS0'), '',Site_Info$Site)
+
+Site_Info
+
+#sOIL_bray_P
+ggplot(xrf, aes(x = Dose, y = Soil_bray_P.mg.L., colour = Dose)) + 
+  geom_boxplot() + 
+  facet_wrap(~Plant.type)
+
+
+# Fit the model after ensuring the 'Plant.type' variable is present
+m1_brayP <- lm(Soil_bray_P.mg.L. ~ Dose * Plant.type , data = xrf)
+summary(m1_brayP)
+
+# check residuals to see if transformation needed
+residualPlot(m1_brayP)
+qqPlot(m1_brayP)
+# test significance
+Anova(m1_brayP)
+# perform multiple comparison test
+library(emmeans)
+# pairs(emmeans(m1_brayP, ~ Dose | Plant.type))
+multcomp::cld(emmeans(m1_brayP, ~ Dose | Plant.type))
+
+
+
+#sOIL_Nutrient_AMMONIUM
+ggplot(xrf, aes(x = Dose, y = Soil_NH4..mg.L., colour = Dose)) + 
+  geom_boxplot() + 
+  facet_wrap(~Plant.type)
+
+
+# Fit the model after ensuring the 'Plant.type' variable is present
+m1_nh4 <- lm(log10(Soil_NH4..mg.L.) ~ Dose * Plant.type , data = xrf)
+summary(m1_nh4)
+#Need to find the calibration range for ammonium and ask with Jeff.
+# check residuals to see if transformation needed
+residualPlot(m1_nh4)
+qqPlot(m1_nh4)
+# test significance
+Anova(m1_nh4)
+# perform multiple comparison test
+library(emmeans)
+# pairs(emmeans(m1_brayP, ~ Dose | Plant.type))
+multcomp::cld(emmeans(m1_nh4, ~ Dose | Plant.type))
+
+
+
+#sOIL_Nutrient_Nitrate
+ggplot(xrf, aes(x = Dose, y = Soil_NO3.mg.L., colour = Dose)) + 
+  geom_boxplot() + 
+  facet_wrap(~Plant.type)
+
+
+# Fit the model after ensuring the 'Plant.type' variable is present
+m1_no3 <- lm(log10(Soil_NO3.mg.L.) ~ Dose * Plant.type , data = xrf)
+summary(m1_no3)
+
+# check residuals to see if transformation needed
+residualPlot(m1_no3)
+qqPlot(m1_no3)
+# test significance
+Anova(m1_no3)
+
+# pairs(emmeans(m1_brayP, ~ Dose | Plant.type))
+multcomp::cld(emmeans(m1_no3, ~ Dose | Plant.type))
+
